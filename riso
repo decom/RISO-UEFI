@@ -38,11 +38,10 @@ instalar_efi(){
     if [ -e ${img_efi} ]; then
         umount /dev/disk/by-uuid/$partefi 2> /dev/null
         mkfs.${sa_partefi} -F 32 -i `echo ${partefi^^} | tr -d -` /dev/disk/by-uuid/$partefi
-        mount /dev/disk/by-uuid/$partefi /mnt
-        cd /mnt
+        mount /dev/disk/by-uuid/$partefi /boot/efi
+        cd /boot/efi
         tar -jxvf $img_efi
-        cd ..
-        umount /mnt 2> /dev/null
+        cd ~
     else
         dialog \
             --title 'Atenção' \
@@ -290,7 +289,7 @@ menu() {
             dialog --stdout                                     \
             --ok-label 'Confirmar'                              \
             --cancel-label 'Sair'                               \
-            --title 'RISO UEFI - 0.1'                           \
+            --title 'RISO UEFI - 0.1.1'                         \
             --menu 'Selecione uma opção:'                       \
                 0 45 0                                          \
                 1 'Instalar imagens já existentes'              \

@@ -371,9 +371,9 @@ menu() {
             dialog --stdout                         \
             --ok-label 'Confirmar'                  \
             --cancel-label 'Sair'                   \
-            --title 'RISOS UEFI - 0.1'                   \
-            --menu 'Selecione uma opção:' \
-                0 45 0                               \
+            --title 'RISOS UEFI - 0.1.1'            \
+            --menu 'Selecione uma opção:'           \
+                0 45 0                              \
                 1 'Iniciar servidor'                \
                 2 'Criar imagens'                   \
                 3 'Criar torrents'                  )

@@ -4,7 +4,7 @@
 # Arquivo de instalação do sistema RISO
 # --------------------------------------------------------------------------
 
-dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog findutils grub-efi mount net-tools ntfs-3g os-prober psmisc rtorrent sed ssh util-linux"
+dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog dosfstools findutils grub-efi mount net-tools ntfs-3g os-prober psmisc rtorrent sed ssh util-linux"
 
 instalar() {
 
@@ -52,11 +52,11 @@ instalar() {
     
     echo "Configurando sistema de boot"
     sed /'GRUB_DISTRIBUTOR='/d -i /etc/default/grub
-    echo 'GRUB_DISTRIBUTOR="Recovery RISO UEFI - 0.1"' >> /etc/default/grub
+    echo 'GRUB_DISTRIBUTOR="Recovery RISO UEFI - 0.1.1"' >> /etc/default/grub
     sed /'GRUB_TIMEOUT='/d -i /etc/default/grub
     echo 'GRUB_TIMEOUT=-1' >> /etc/default/grub
-    sed /'GRUB_BACKGROUD='/d -i /etc/default/grub
-    echo 'GRUB_BACKGROUD="/grub.png"' >> /etc/default/grub
+    sed /'GRUB_BACKGROUND='/d -i /etc/default/grub
+    echo 'GRUB_BACKGROUND="/grub.png"' >> /etc/default/grub
 
     rm -f /etc/grub.d/20_memtest86+
     if [ -e /etc/grub.d/10_linux ]; then
