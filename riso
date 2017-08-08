@@ -1,0 +1,319 @@
+#!/bin/bash
+
+#Variáveis do script
+dir_riso=/usr/riso
+dir_img=$dir_riso/imagens
+img_win=$dir_img/windows.img.bz2
+img_lin=$dir_img/linux.tar.bz2
+img_efi=$dir_img/efi.tar.bz2
+tor_win=$img_win.torrent
+tor_lin=$img_lin.torrent
+riso_cfg=$dir_riso/riso.cfg
+
+
+carregar_variaveis() {
+    avahi_saida=`avahi-browse -rtp _DECOM_RISO._tcp | grep '=' | head -n 1 | cut -d';' -f10`
+
+    servidor=`( tr ' ' '\n' | grep "^\"servidor=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    if [ -z $servidor ]; then
+        dialog \
+        --title 'Atenção' \
+        --ok-label 'OK' \
+        --msgbox 'Não existe nenhum servidor RISOS ativo na rede\nVerifique a conexão e tente novamente' \
+        0 0
+        exit 1
+    fi
+       
+    #Tamanho total das imagens criadas no servidor.
+    tamwindows=`( tr ' ' '\n' | grep "^\"tamwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    tamlinux=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    
+    wget -O ${riso_cfg} "http://${servidor}/riso.cfg"
+    
+    source $riso_cfg
+}
+
+
+instalar_efi(){
+    if [ -e ${img_efi} ]; then
+        umount /dev/disk/by-uuid/$partefi 2> /dev/null
+        mkfs.${sa_partefi} -F 32 -i `echo ${partefi^^} | tr -d -` /dev/disk/by-uuid/$partefi
+        mount /dev/disk/by-uuid/$partefi /mnt
+        cd /mnt
+        tar -jxvf $img_efi
+        cd ..
+        umount /mnt 2> /dev/null
+    else
+        dialog \
+            --title 'Atenção' \
+            --ok-label 'OK' \
+            --msgbox 'Não foi possível obter imagem EFI' \
+            0 0
+            return 1
+    fi
+}
+
+
+instalar() {
+    instalar_efi
+    if [ -e ${img_win} -a -e ${img_lin} ]; then
+        #Carrega variáveis
+        source $riso_cfg
+
+        #Desmonta partiçoes.
+        umount /dev/disk/by-uuid/${partwindows^^} 2> /dev/null
+        umount /dev/disk/by-uuid/${partlinux,,} 2> /dev/null
+
+        #Instala windows.
+        bzcat -c $img_win | ntfsclone --restore-image --overwrite /dev/disk/by-uuid/${partwindows^^} -
+
+        #Instala linux.
+        mkfs.${sa_partlinux} -qF -U $partlinux /dev/disk/by-uuid/${partlinux,,}
+        mount /dev/disk/by-uuid/${partlinux,,} /mnt
+        cd /mnt
+        tar -jxvf $img_lin
+        cd ..
+        umount /mnt 2> /dev/null
+
+        sleep 3
+        update-grub
+        reboot
+	   
+    else
+        dialog \
+        --title 'Atenção' \
+        --ok-label 'OK' \
+        --msgbox 'Não existem imagens dos sistemas' \
+        0 0
+        return 1
+    fi
+}
+
+
+instalar_windows() {
+    instalar_efi
+    if [ -e ${img_win} ]; then
+        #Carrega variáveis
+        source $riso_cfg
+
+        #Desmonta partiçoes
+        umount /dev/disk/by-uuid/${partwindows^^} 2> /dev/null
+
+        #Instala windows
+        bzcat -c $img_win | ntfsclone --restore-image --overwrite /dev/disk/by-uuid/${partwindows^^}  -
+
+        update-grub
+        reboot
+    else
+        dialog \
+        --title 'Atenção' \
+        --ok-label 'OK' \
+        --msgbox 'Não existe imagem do sistema' \
+        0 0
+        return 1
+    fi
+}
+
+
+instalar_linux() {
+    instalar_efi
+    if [ -e ${img_lin} ]; then
+
+        #Carrega variáveis
+        souce $riso_cfg
+
+        #Desmonta partiçoes.
+        umount /dev/disk/by-uuid/${partlinux,,} 2> /dev/null
+
+        #Instala linux
+        mkfs.${sa_partlinux} -qF -U ${partlinux,,} /dev/disk/by-uuid/${partlinux,,}
+        mount /dev/disk/by-uuid/${partlinux,,} /mnt
+        cd /mnt
+        tar -jxvf $img_lin
+        cd ..
+        umount /mnt 2> /dev/null
+
+        sleep 3
+        update-grub
+        reboot
+    else
+        dialog \
+        --title 'Atenção' \
+        --ok-label 'OK' \
+        --msgbox 'Não existe imagem do sistema' \
+        0 0
+        return 1
+    fi
+}
+
+
+baixar_imagem_windows() {
+    echo "Conectando ao servidor"
+    carregar_variaveis || return 1
+
+    #Vefifica se imagem já é a mais recente
+    sizelocwin="0"
+    [ -e ${img_win} ] && sizelocwin=$(du ${img_win} | cut -f1)
+    if [ "$sizelocwin" = "$tamwindows" ]; then
+        dialog \
+        --title 'Atenção' \
+        --ok-label 'OK' \
+        --msgbox 'A imagem no computador já é a mais recente' \
+        0 0
+        return 1
+    fi
+    #Deleta imagem antiga
+    echo "Removendo imagem antiga"
+    rm -f ${img_win}
+    rm -f ${tor_win}
+
+
+    #Baixa a imagem
+    wget -O ${tor_win} "http://${servidor}/windows.img.bz2.torrent"
+    wget -O ${img_efi} "http://${servidor}/efi.tar.bz2"
+    #Guarda IP de criação do torrent
+    echo $servidor > $dir_img/Windows_IP
+
+    cd ${dir_img}
+    rtorrent ${tor_win}
+
+    #Volta para o menu ao fechar torrent
+    trap "killall rtorrent; clear; exit" 2 15
+
+    echo "Download finalizado"
+    sleep 3
+    reset
+}
+
+
+baixar_imagem_linux() {
+    echo "Conectando ao servidor"
+    carregar_variaveis || return 1
+
+    #Vefifica se imagem já é a mais recente
+    sizeloclin="0"
+    [ -e ${img_lin} ] && sizeloclin=$(du ${img_lin} | cut -f1)
+    if [ "$sizeloclin" = "$tamlinux" ]; then
+        dialog \
+        --title 'Atenção' \
+        --ok-label 'OK' \
+        --msgbox 'A imagem no computador já é a mais recente' \
+        0 0
+        return 1
+    fi
+
+    #Deleta imagem antiga
+    echo "Removendo imagem antiga"
+    rm -f ${img_lin}
+    rm -f ${tor_lin}
+
+    #Baixa a imagem
+    wget -O ${tor_lin} "http://${servidor}/linux.tar.bz2.torrent"
+    wget -O ${img_efi} "http://${servidor}/efi.tar.bz2"
+    #Guarda IP de criação do Ttorrent
+    echo $servidor > $dir_img/Linux_IP
+
+    cd ${dir_img}
+    rtorrent ${tor_lin}
+
+    #Volta para o menu ao fechar torrent
+    trap "killall rtorrent; clear; exit" 2 15
+
+    echo "Download finalizado"
+    sleep 3
+    reset
+}
+
+
+menu_instalar_imagens() {
+    opcao=$( dialog --stdout \
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione quais imagens deseja instalar:' \
+        0 45 0 \
+        Windows '' ON  \
+        Linux '' ON  )
+
+    case $opcao in
+        "Windows") instalar_windows;;
+        "Linux") instalar_linux;;
+        "Windows Linux") instalar;;
+    esac
+}
+
+
+menu_baixar_instalar_imagens() {
+    opcao=$( dialog --stdout \
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione quais imagens deseja baixar e instalar:' \
+        0 45 0 \
+        Windows '' ON  \
+        Linux '' ON )
+
+    case $opcao in
+        "Windows") baixar_imagem_windows && instalar_windows;;
+        "Linux") baixar_imagem_linux && instalar_linux;;
+        "Windows Linux") baixar_imagem_linux && baixar_imagem_windows && instalar;;
+    esac
+}
+
+menu_baixar_imagens() {
+    opcao=$( dialog --stdout \
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione quais imagens deseja baixar:' \
+        0 45 0 \
+        Windows '' ON  \
+        Linux '' ON )
+
+    case $opcao in
+        "Windows") baixar_imagem_windows && dialog \
+            --title 'Sucesso' \
+            --ok-label 'OK' \
+            --msgbox 'Imagem baixada com sucesso.' \
+            0 0;;
+        "Linux") baixar_imagem_linux && dialog \
+            --title 'Sucesso' \
+            --ok-label 'OK' \
+            --msgbox 'Imagem baixada com sucesso.' \
+            0 0;;
+        "Windows Linux") baixar_imagem_linux && baixar_imagem_windows && dialog \
+            --title 'Sucesso' \
+            --ok-label 'OK' \
+            --msgbox 'Imagens baixadas com sucesso.' \
+            0 0;;
+    esac
+}
+
+
+menu() {
+    while : ; do
+        opcao=$(
+            dialog --stdout                                     \
+            --ok-label 'Confirmar'                              \
+            --cancel-label 'Sair'                               \
+            --title 'RISO UEFI - 0.1'                           \
+            --menu 'Selecione uma opção:'                       \
+                0 45 0                                          \
+                1 'Instalar imagens já existentes'              \
+                2 'Baixar e instalar novas imagens'             \
+                3 'Baixar novas imagens'                        )
+
+        [ $? -ne 0 ] && break
+
+        case $opcao in
+            1) menu_instalar_imagens;;
+            2) menu_baixar_instalar_imagens;;
+            3) menu_baixar_imagens;;
+        esac
+    done
+}
+
+#Verifica se usuário é root antes de iniciar o riso.
+USER=`id -u`
+if [ $USER == '0' ]; then
+    menu
+    clear
+else
+    echo "Este script deve ser executado com o usuario root"
+    echo "\"Great scripts come with great responsabilities...\" - Uncle Juan"
+    exit 1
+fi
