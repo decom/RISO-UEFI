@@ -171,7 +171,7 @@ baixar_imagem_windows() {
     wget -O ${tor_win} "http://${servidor}/windows.img.bz2.torrent"
     wget -O ${img_efi} "http://${servidor}/efi.tar.bz2"
     #Guarda IP de criação do torrent
-    echo $servidor > $dir_img/Windows_IP
+    echo $servidor > $dir_img/windows.ip
 
     cd ${dir_img}
     rtorrent ${tor_win}
@@ -209,8 +209,8 @@ baixar_imagem_linux() {
     #Baixa a imagem
     wget -O ${tor_lin} "http://${servidor}/linux.tar.bz2.torrent"
     wget -O ${img_efi} "http://${servidor}/efi.tar.bz2"
-    #Guarda IP de criação do Ttorrent
-    echo $servidor > $dir_img/Linux_IP
+    #Guarda IP de criação do torrent
+    echo $servidor > $dir_img/linux.ip
 
     cd ${dir_img}
     rtorrent ${tor_lin}
