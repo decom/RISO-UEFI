@@ -52,7 +52,7 @@ instalar() {
     
     echo "Configurando sistema de boot"
     sed /'GRUB_DISTRIBUTOR='/d -i /etc/default/grub
-    echo 'GRUB_DISTRIBUTOR="Recovery RISO UEFI - 0.1.2"' >> /etc/default/grub
+    echo 'GRUB_DISTRIBUTOR="Recovery RISO UEFI - 0.1.3"' >> /etc/default/grub
     sed /'GRUB_TIMEOUT='/d -i /etc/default/grub
     echo 'GRUB_TIMEOUT=-1' >> /etc/default/grub
     sed /'GRUB_BACKGROUND='/d -i /etc/default/grub
