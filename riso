@@ -289,7 +289,7 @@ menu() {
             dialog --stdout                                     \
             --ok-label 'Confirmar'                              \
             --cancel-label 'Sair'                               \
-            --title 'RISO UEFI - 0.1.1'                         \
+            --title 'RISO UEFI - 0.1.2'                         \
             --menu 'Selecione uma opção:'                       \
                 0 45 0                                          \
                 1 'Instalar imagens já existentes'              \
