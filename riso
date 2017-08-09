@@ -46,7 +46,7 @@ instalar_efi(){
         dialog \
             --title 'Atenção' \
             --ok-label 'OK' \
-            --msgbox 'Não foi possível obter imagem EFI' \
+            --msgbox 'Não foi possível obter a imagem EFI' \
             0 0
             return 1
     fi
@@ -82,7 +82,7 @@ instalar() {
         dialog \
         --title 'Atenção' \
         --ok-label 'OK' \
-        --msgbox 'Não existem imagens dos sistemas' \
+        --msgbox 'Não existem imagens dos sistemas operacionais' \
         0 0
         return 1
     fi
@@ -101,13 +101,14 @@ instalar_windows() {
         #Instala windows
         bzcat -c $img_win | ntfsclone --restore-image --overwrite /dev/disk/by-uuid/${partwindows^^}  -
 
-        update-grub
+        sleep 3
+	update-grub
         reboot
     else
         dialog \
         --title 'Atenção' \
         --ok-label 'OK' \
-        --msgbox 'Não existe imagem do sistema' \
+        --msgbox 'Não existe imagem do windows' \
         0 0
         return 1
     fi
@@ -139,7 +140,7 @@ instalar_linux() {
         dialog \
         --title 'Atenção' \
         --ok-label 'OK' \
-        --msgbox 'Não existe imagem do sistema' \
+        --msgbox 'Não existe imagem do linux' \
         0 0
         return 1
     fi
@@ -157,12 +158,12 @@ baixar_imagem_windows() {
         dialog \
         --title 'Atenção' \
         --ok-label 'OK' \
-        --msgbox 'A imagem no computador já é a mais recente' \
+        --msgbox 'A imagem windows no computador já é a mais recente' \
         0 0
         return 1
     fi
     #Deleta imagem antiga
-    echo "Removendo imagem antiga"
+    echo "Removendo imagem antiga do windows"
     rm -f ${img_win}
     rm -f ${tor_win}
 
@@ -179,7 +180,7 @@ baixar_imagem_windows() {
     #Volta para o menu ao fechar torrent
     trap "killall rtorrent; clear; exit" 2 15
 
-    echo "Download finalizado"
+    echo "Download do windows finalizado"
     sleep 3
     reset
 }
@@ -196,13 +197,13 @@ baixar_imagem_linux() {
         dialog \
         --title 'Atenção' \
         --ok-label 'OK' \
-        --msgbox 'A imagem no computador já é a mais recente' \
+        --msgbox 'A imagem linux no computador já é a mais recente' \
         0 0
         return 1
     fi
 
     #Deleta imagem antiga
-    echo "Removendo imagem antiga"
+    echo "Removendo imagem antiga do linux"
     rm -f ${img_lin}
     rm -f ${tor_lin}
 
@@ -218,7 +219,7 @@ baixar_imagem_linux() {
     #Volta para o menu ao fechar torrent
     trap "killall rtorrent; clear; exit" 2 15
 
-    echo "Download finalizado"
+    echo "Download do linux finalizado"
     sleep 3
     reset
 }
@@ -267,17 +268,17 @@ menu_baixar_imagens() {
         "Windows") baixar_imagem_windows && dialog \
             --title 'Sucesso' \
             --ok-label 'OK' \
-            --msgbox 'Imagem baixada com sucesso.' \
+            --msgbox 'Imagem windows baixada com sucesso.' \
             0 0;;
         "Linux") baixar_imagem_linux && dialog \
             --title 'Sucesso' \
             --ok-label 'OK' \
-            --msgbox 'Imagem baixada com sucesso.' \
+            --msgbox 'Imagem linux baixada com sucesso.' \
             0 0;;
         "Windows Linux") baixar_imagem_linux && baixar_imagem_windows && dialog \
             --title 'Sucesso' \
             --ok-label 'OK' \
-            --msgbox 'Imagens baixadas com sucesso.' \
+            --msgbox 'Imagens windows e linux baixadas com sucesso.' \
             0 0;;
     esac
 }
@@ -292,7 +293,7 @@ menu() {
             --title 'RISO UEFI - 0.1.3'                         \
             --menu 'Selecione uma opção:'                       \
                 0 45 0                                          \
-                1 'Instalar imagens já existentes'              \
+                1 'Instalar imagens já baixadas'                \
                 2 'Baixar e instalar novas imagens'             \
                 3 'Baixar novas imagens'                        )
 
@@ -312,7 +313,7 @@ if [ $USER == '0' ]; then
     menu
     clear
 else
-    echo "Este script deve ser executado com o usuario root"
-    echo "\"Great scripts come with great responsabilities...\" - Uncle Juan"
+    echo "Este script deve ser executado com o usuário root"
+    echo "\"Os grandes scripts vêm com grandes responsabilidades...\" - Uncle Juan"
     exit 1
 fi
