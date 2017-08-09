@@ -366,12 +366,13 @@ menu_criar_torrents() {
 
 
 menu() {
+    version=`cat $dir_riso/riso.version`
     while : ; do
         opcao=$(
             dialog --stdout                                                      \
             --ok-label 'Confirmar'                                               \
             --cancel-label 'Sair'                                                \
-            --title 'RISOS UEFI - `cat ${dir_riso}/riso.version`'                \
+            --title "RISOS UEFI - ${version}"                                    \
             --menu 'Selecione uma opção:'                                        \
                 0 45 0                                                           \
                 1 'Iniciar o servidor RISOS'                                     \

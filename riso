@@ -285,12 +285,13 @@ menu_baixar_imagens() {
 
 
 menu() {
+    version=`cat $dir_riso/riso.version`
     while : ; do
         opcao=$(
             dialog --stdout                                     \
             --ok-label 'Confirmar'                              \
             --cancel-label 'Sair'                               \
-            --title 'RISO UEFI - `cat ${dir_riso}/riso.version`'\
+            --title "RISO UEFI - ${version}"                    \
             --menu 'Selecione uma opção:'                       \
                 0 45 0                                          \
                 1 'Instalar as imagens baixadas'                \
