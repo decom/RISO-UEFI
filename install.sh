@@ -77,7 +77,7 @@ instalar() {
 
 #Verifica se usuário é o root antes de executar.
 if [ $(id -u) -ne "0" ];then
-	echo "Este script deve ser executado com o usuario root"
+	echo "Este script deve ser executado com o usuário root"
 	echo "\"Os grandes scripts vêm com grandes responsabilidades...\" - Uncle Juan"
 	exit 1
 else
