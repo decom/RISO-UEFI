@@ -8,11 +8,11 @@ dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog 
 
 instalar() {
 
-    echo "Atualizando sistema operacional"
+    echo "Atualizando  o sistema operacional"
     apt-get update
     apt-get autoremove -y
     
-    echo "Obtendo dependências"
+    echo "Obtendo as dependências de pacotes"
     for i in $dependencias
     do
     	apt-get install -y $i
@@ -24,11 +24,11 @@ instalar() {
     
     dirpath=`dirname $0`
 
-    echo "Criando árvore de diretórios"
+    echo "Criando a árvore de diretórios"
     mkdir -p /usr/riso
     mkdir -p /usr/riso/imagens
 
-    echo "Instalando scritps"
+    echo "Instalando os scritps"
     cp $dirpath/riso /usr/riso/riso
     echo '#!/bin/bash' > /usr/bin/riso
     echo '/usr/riso/riso $@' >> /usr/bin/riso
@@ -50,7 +50,7 @@ instalar() {
     cp $dirpath/grub.png /grub.png
 
     
-    echo "Configurando sistema de boot"
+    echo "Configurando o sistema de boot"
     sed /'GRUB_DISTRIBUTOR='/d -i /etc/default/grub
     echo 'GRUB_DISTRIBUTOR="Recovery RISO UEFI - 0.1.3"' >> /etc/default/grub
     sed /'GRUB_TIMEOUT='/d -i /etc/default/grub
@@ -64,7 +64,7 @@ instalar() {
     fi
     update-grub
     
-    echo "Configurando serviços do sistema"
+    echo "Configurando os serviços do sistema"
     echo '#!/bin/bash' > /etc/init.d/RISOServiceRemoval
     echo 'rm /etc/avahi/services/*' >> /etc/init.d/RISOServiceRemoval
     echo 'exit 0' >> /etc/init.d/RISOServiceRemoval
@@ -72,13 +72,13 @@ instalar() {
     update-rc.d RISOServiceRemoval defaults 2> /dev/null
     sed s/'use-ipv6=yes'/'use-ipv6=no'/g -i /etc/avahi/avahi-daemon.conf   
 
-    echo "Sistema instalado com sucesso."
+    echo "O Sistema foi instalado com sucesso."
 }
 
 #Verifica se usuário é o root antes de executar.
 if [ $(id -u) -ne "0" ];then
 	echo "Este script deve ser executado com o usuario root"
-	echo "\"Great scripts come with great responsabilities...\" - Uncle Juan"
+	echo "\"Os grandes scripts vêm com grandes responsabilidades...\" - Uncle Juan"
 	exit 1
 else
 	instalar
