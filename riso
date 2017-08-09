@@ -229,7 +229,7 @@ menu_instalar_imagens() {
     opcao=$( dialog --stdout \
         --ok-label 'Confirmar'   \
         --checklist 'Selecione as imagens que serão instaladas:' \
-        0 45 0 \
+        0 60 0 \
         Windows '' ON  \
         Linux '' ON  )
 
@@ -245,7 +245,7 @@ menu_baixar_instalar_imagens() {
     opcao=$( dialog --stdout \
         --ok-label 'Confirmar'   \
         --checklist 'Selecione as imagens que serão baixadas e instaladas:' \
-        0 45 0 \
+        0 60 0 \
         Windows '' ON  \
         Linux '' ON )
 
@@ -260,7 +260,7 @@ menu_baixar_imagens() {
     opcao=$( dialog --stdout \
         --ok-label 'Confirmar'   \
         --checklist 'Selecione as imagens que serão baixadas:' \
-        0 45 0 \
+        0 60 0 \
         Windows '' ON  \
         Linux '' ON )
 
@@ -293,7 +293,7 @@ menu() {
             --cancel-label 'Sair'                               \
             --title "RISO UEFI - ${version}"                    \
             --menu 'Selecione uma opção:'                       \
-                0 45 0                                          \
+                0 60 0                                          \
                 1 'Instalar as imagens baixadas'                \
                 2 'Baixar e instalar novas imagens'             \
                 3 'Baixar novas imagens'                        )
