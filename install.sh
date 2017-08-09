@@ -8,7 +8,7 @@ dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog 
 
 instalar() {
 
-    echo "Atualizando  o sistema operacional"
+    echo "Atualizando o sistema operacional"
     apt-get update
     apt-get autoremove -y
     
@@ -72,7 +72,7 @@ instalar() {
     update-rc.d RISOServiceRemoval defaults 2> /dev/null
     sed s/'use-ipv6=yes'/'use-ipv6=no'/g -i /etc/avahi/avahi-daemon.conf   
 
-    echo "O Sistema foi instalado com sucesso."
+    echo "O Sistema Recovery RISO UEFI - 0.1.3 foi instalado com sucesso."
 }
 
 #Verifica se usuário é o root antes de executar.
