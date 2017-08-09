@@ -24,6 +24,8 @@ instalar() {
     
     dirpath=`dirname $0`
 
+    version=`cat $dirpath/riso.version`
+
     echo "Criando a árvore de diretórios"
     mkdir -p /usr/riso
     mkdir -p /usr/riso/imagens
@@ -47,12 +49,13 @@ instalar() {
 
     cp $dirpath/rtorrent.rc /root/.rtorrent.rc
     cp $dirpath/riso.cfg /usr/riso/riso.cfg
+    cp $dirpath/riso.version /usr/riso/riso.version
     cp $dirpath/grub.png /grub.png
 
     
     echo "Configurando o sistema de boot"
     sed /'GRUB_DISTRIBUTOR='/d -i /etc/default/grub
-    echo 'GRUB_DISTRIBUTOR="Recovery RISO UEFI - 0.1.3"' >> /etc/default/grub
+    echo 'GRUB_DISTRIBUTOR="Recovery RISO UEFI - ${version}"' >> /etc/default/grub
     sed /'GRUB_TIMEOUT='/d -i /etc/default/grub
     echo 'GRUB_TIMEOUT=-1' >> /etc/default/grub
     sed /'GRUB_BACKGROUND='/d -i /etc/default/grub
@@ -72,7 +75,7 @@ instalar() {
     update-rc.d RISOServiceRemoval defaults 2> /dev/null
     sed s/'use-ipv6=yes'/'use-ipv6=no'/g -i /etc/avahi/avahi-daemon.conf   
 
-    echo "O Sistema Recovery RISO UEFI - 0.1.3 foi instalado com sucesso."
+    echo "O Sistema Recovery RISO UEFI - ${version} foi instalado com sucesso."
 }
 
 #Verifica se usuário é o root antes de executar.
