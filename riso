@@ -23,25 +23,25 @@ carregar_variaveis() {
         0 0
         exit 1
     fi
-       
+
     #Tamanho total das imagens criadas no servidor.
     tamwindows=`( tr ' ' '\n' | grep "^\"tamwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     tamlinux=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    
+
     wget -O ${riso_cfg} "http://${servidor}/riso.cfg"
-    
+
     source $riso_cfg
+
+    return 0
 }
 
 
 instalar_efi(){
     if [ -e ${img_efi} ]; then
-        umount /dev/disk/by-uuid/${partefi^^} 2> /dev/null
-        mkfs.${sa_partefi} -F 32 -i `echo ${partefi^^} | tr -d -` /dev/disk/by-uuid/${partefi^^}
-        mount /dev/disk/by-uuid/${partefi^^} /boot/efi
         cd /boot/efi
-        tar -jxvf $img_efi
+        tar --overwrite -jxvf $img_efi
         cd ~
+        return 0
     else
         dialog \
             --title 'Atenção' \
@@ -54,8 +54,8 @@ instalar_efi(){
 
 
 instalar() {
-    instalar_efi
     if [ -e ${img_win} -a -e ${img_lin} ]; then
+        instalar_efi
         #Carrega as variáveis
         source $riso_cfg
 
@@ -70,14 +70,13 @@ instalar() {
         mkfs.${sa_partlinux} -qF -U $partlinux /dev/disk/by-uuid/${partlinux,,}
         mount /dev/disk/by-uuid/${partlinux,,} /mnt
         cd /mnt
-        tar -jxvf $img_lin
+        tar --overwrite -jxvf $img_lin
         cd ..
         umount /mnt 2> /dev/null
 
         sleep 3
         update-grub
         reboot
-	   
     else
         dialog \
         --title 'Atenção' \
@@ -90,8 +89,8 @@ instalar() {
 
 
 instalar_windows() {
-    instalar_efi
     if [ -e ${img_win} ]; then
+        instalar_efi
         #Carrega as variáveis
         source $riso_cfg
 
@@ -116,9 +115,8 @@ instalar_windows() {
 
 
 instalar_linux() {
-    instalar_efi
     if [ -e ${img_lin} ]; then
-
+        instalar_efi
         #Carrega as variáveis
         souce $riso_cfg
 
@@ -129,7 +127,7 @@ instalar_linux() {
         mkfs.${sa_partlinux} -qF -U ${partlinux,,} /dev/disk/by-uuid/${partlinux,,}
         mount /dev/disk/by-uuid/${partlinux,,} /mnt
         cd /mnt
-        tar -jxvf $img_lin
+        tar --overwrite -jxvf $img_lin
         cd ..
         umount /mnt 2> /dev/null
 
@@ -183,6 +181,7 @@ baixar_imagem_windows() {
     echo "O download do windows foi finalizado"
     sleep 3
     reset
+    return 0
 }
 
 
@@ -222,6 +221,7 @@ baixar_imagem_linux() {
     echo "O download do linux foi finalizado"
     sleep 3
     reset
+    return 0
 }
 
 
@@ -315,6 +315,6 @@ if [ $USER == '0' ]; then
     clear
 else
     echo "Este script deve ser executado com o usuário root"
-    echo "\"Os grandes scripts vêm com grandes responsabilidades...\" - Uncle Juan"
+    echo "\"Os grandes scripts vêm com grandes responsabilidades.\" - Uncle Juan"
     exit 1
 fi

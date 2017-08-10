@@ -11,7 +11,7 @@ instalar() {
     echo "Atualizando o sistema operacional"
     apt-get update
     apt-get autoremove -y
-    
+
     echo "Obtendo as dependências de pacotes"
     for i in $dependencias
     do
@@ -21,7 +21,7 @@ instalar() {
     		 return 1
     	fi
     done
-    
+
     dirpath=`dirname $0`
 
     version=`cat $dirpath/riso.version`
@@ -52,7 +52,6 @@ instalar() {
     cp $dirpath/riso.version /usr/riso/riso.version
     cp $dirpath/grub.png /grub.png
 
-    
     echo "Configurando o sistema de boot"
     sed /'GRUB_DISTRIBUTOR='/d -i /etc/default/grub
     echo 'GRUB_DISTRIBUTOR="Recovery RISO UEFI - '${version}'"' >> /etc/default/grub
@@ -66,14 +65,14 @@ instalar() {
         mv /etc/grub.d/10_linux /etc/grub.d/50_linux
     fi
     update-grub
-    
+
     echo "Configurando os serviços do sistema"
     echo '#!/bin/bash' > /etc/init.d/RISOServiceRemoval
     echo 'rm /etc/avahi/services/*' >> /etc/init.d/RISOServiceRemoval
     echo 'exit 0' >> /etc/init.d/RISOServiceRemoval
     chmod 755 /etc/init.d/RISOServiceRemoval
     update-rc.d RISOServiceRemoval defaults 2> /dev/null
-    sed s/'use-ipv6=yes'/'use-ipv6=no'/g -i /etc/avahi/avahi-daemon.conf   
+    sed s/'use-ipv6=yes'/'use-ipv6=no'/g -i /etc/avahi/avahi-daemon.conf
 
     echo "O Sistema Recovery RISO UEFI - ${version} foi instalado com sucesso."
 }
@@ -81,7 +80,7 @@ instalar() {
 #Verifica se usuário é o root antes de executar.
 if [ $(id -u) -ne "0" ];then
 	echo "Este script deve ser executado com o usuário root"
-	echo "\"Os grandes scripts vêm com grandes responsabilidades...\" - Uncle Juan"
+	echo "\"Os grandes scripts vêm com grandes responsabilidades.\" - Uncle Juan"
 	exit 1
 else
 	instalar
