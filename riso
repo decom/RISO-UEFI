@@ -8,7 +8,7 @@ img_lin=$dir_img/linux.tar.bz2
 img_efi=$dir_img/efi.tar.bz2
 tor_win=$img_win.torrent
 tor_lin=$img_lin.torrent
-riso_cfg=$dir_riso/riso.cfg
+riso_cfg=$dir_riso/riso-EFI.cfg
 
 
 carregar_variaveis() {
@@ -28,7 +28,7 @@ carregar_variaveis() {
     tamwindows=`( tr ' ' '\n' | grep "^\"tamwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     tamlinux=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 
-    wget -O ${riso_cfg} "http://${servidor}/riso.cfg"
+    wget -O ${riso_cfg} "http://${servidor}/riso-EFI.cfg"
 
     source $riso_cfg
 
