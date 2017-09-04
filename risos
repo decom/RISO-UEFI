@@ -9,7 +9,7 @@ img_efi=$dir_img/efi.tar.bz2
 tor_win=$img_win.torrent
 tor_lin=$img_lin.torrent
 dir_www=/var/www/html
-riso_cfg=$dir_riso/riso.cfg
+riso_cfg=$dir_riso/riso-EFI.cfg
 
 
 carregar_variaveis() {
