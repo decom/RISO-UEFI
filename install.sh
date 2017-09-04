@@ -48,7 +48,7 @@ instalar() {
     chmod +x /usr/riso/quitRTorrent.sh
 
     cp $dirpath/rtorrent.rc /root/.rtorrent.rc
-    cp $dirpath/riso.cfg /usr/riso/riso-EFI.cfg
+    cp $dirpath/riso-EFI.cfg /usr/riso/riso-EFI.cfg
     cp $dirpath/riso.version /usr/riso/riso.version
     cp $dirpath/grub.png /grub.png
 
