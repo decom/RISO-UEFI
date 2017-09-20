@@ -98,9 +98,7 @@ instalar() {
 
     	rm -f /etc/grub.d/20_memtest86+
     	
-	if [ -e /etc/grub.d/10_linux ]; 
-	
-	then
+	if [ -e /etc/grub.d/10_linux ];	then
         
 		mv /etc/grub.d/10_linux /etc/grub.d/50_linux
     	
@@ -127,9 +125,7 @@ instalar() {
 
 	#Verifica se usuário é o root antes de instalar e caso no seja root termina a execução.
 
-	if [ $(id -u) -ne "0" ];
-	
-	then
+	if [ $(id -u) -ne "0" ]; then
 	
 		echo -e '\033[33m Este script deve ser executado com o usuário root\n\033[m'
 	
