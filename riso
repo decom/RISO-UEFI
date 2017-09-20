@@ -314,7 +314,8 @@ if [ $USER == '0' ]; then
     menu
     clear
 else
-    echo "Este script deve ser executado com o usuário root"
-    echo "\"Os grandes scripts vêm com grandes responsabilidades.\" - Uncle Juan"
+    
+    echo '\033[33m Este script deve ser executado pelo usuário root.\n\033[m'
+    
     exit 1
 fi
