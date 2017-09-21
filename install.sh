@@ -33,7 +33,7 @@ instalar() {
 		return 1
     		
 		fi
-    		
+		
 		done
 
     	echo -e '\033[33m As dependências dos pacotes foram baixadas e instaladas com sucesso.\n\033[m'
