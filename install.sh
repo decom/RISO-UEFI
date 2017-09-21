@@ -14,17 +14,15 @@ instalar() {
 	
 	echo -e '\033[33m Atualizando o sistema operacional\n\033[m'
     	
-	apt-get update
+	apt update
     	
-	apt-get autoremove -y
+	apt autoremove -y
 
-    	echo -e '\033[33m Obtendo as dependências de pacotes\n\033[m'
+    	echo -e '\033[33m Baixando as dependências dos pacotes e instalando...\n\033[m'
     		
-		for i in $dependencias
-    		
-		do
+		for i in $dependencias do
     	
-		apt-get install -y $i
+		apt install -y $i
     	
 		if [ "$?" != "0" ]; then
     		
@@ -40,13 +38,15 @@ instalar() {
 
     	version=`cat $dirpath/riso.version`
 
-    	echo -e '\033[33m Criando a árvore de diretórios\n\033[m'
+    	echo -e '\033[33m Criando a árvore de diretórios...\n\033[m'
     	
 	mkdir -p /usr/riso
     	
 	mkdir -p /usr/riso/imagens
 
-    	echo -e '\033[33m Instalando os scritps\n\033[m'
+    	echo -e '\033[33m Árvore de diretórios criada com sucesso.\n\033[m'
+	
+	echo -e '\033[33m Instalando os scritps...\n\033[m'
     	
 	cp $dirpath/riso /usr/riso/riso
     	
@@ -81,8 +81,10 @@ instalar() {
 	cp $dirpath/riso.version /usr/riso/riso.version
     	
 	cp $dirpath/grub.png /grub.png
+	
+	echo -e '\033[33m Scritps instalados com sucesso.\n\033[m'
 
-    	echo -e '\033[33m Configurando o sistema de boot\n\033[m'
+    	echo -e '\033[33m Configurando o sistema de boot e atualizando...\n\033[m'
     	
 	sed /'GRUB_DISTRIBUTOR='/d -i /etc/default/grub
     	
@@ -105,8 +107,10 @@ instalar() {
 	fi
     	
 	update-grub
+	
+	echo -e '\033[33m Sistema de boot configurando e atualizando com sucesso.\n\033[m'
 
-    	echo -e '\033[33m Configurando os serviços do sistema\n\033[m'
+    	echo -e '\033[33m Configurando os serviços do sistema...\n\033[m'
     	
 	echo '#!/bin/bash' > /etc/init.d/RISOServiceRemoval
     	
@@ -119,6 +123,8 @@ instalar() {
 	update-rc.d RISOServiceRemoval defaults 2> /dev/null
     	
 	sed s/'use-ipv6=yes'/'use-ipv6=no'/g -i /etc/avahi/avahi-daemon.conf
+	
+	echo -e '\033[33m Os serviços do sistema foram configurados com sucesso.\n\033[m'
 
     	echo -e '\033[33m O Sistema Recovery RISO UEFI - ${version} foi instalado com sucesso.\n\033[m'
 }
@@ -127,7 +133,7 @@ instalar() {
 
 	if [ $(id -u) -ne "0" ]; then
 	
-		echo -e '\033[33m Este script deve ser executado com o usuário root\n\033[m'
+		echo -e '\033[33m Este script deve ser executado pelo usuário root.\nExecute o script novamente.\n\033[m'
 	
 		exit 1
 	
