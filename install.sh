@@ -12,13 +12,15 @@ instalar() {
 
 	clear
 	
-	echo -e '\033[33m Atualizando o sistema operacional\n\033[m'
+	echo -e '\033[33m Atualizando o sistema operacional do RECOVERY RISO UEFI...\n\033[m'
     	
 	apt update
     	
 	apt autoremove -y
+	
+	echo -e '\033[33m O sistema operacional do RECOVERY RISO UEFI foi atualizando com sucesso.\n\033[m'
 
-    	echo -e '\033[33m Baixando as dependências dos pacotes e instalando...\n\033[m'
+    	echo -e '\033[33m Baixando e instalando as dependências dos pacotes...\n\033[m'
     		
 		for i in $dependencias do
     	
@@ -26,7 +28,7 @@ instalar() {
     	
 		if [ "$?" != "0" ]; then
     		
-		echo -e '\033[33m Falha ao instalar - Erro ao baixar a dependência: $i\n\033[m'
+		echo -e '\033[33m - Erro - Falha ao baixar e instalar as dependências: $i\n\033[m'
     		
 		return 1
     		
@@ -34,17 +36,19 @@ instalar() {
     		
 		done
 
-    	dirpath=`dirname $0`
+    	echo -e '\033[33m As dependências dos pacotes foram baixadas e instaladas com sucesso.\n\033[m'
+	
+	dirpath=`dirname $0`
 
     	version=`cat $dirpath/riso.version`
 
-    	echo -e '\033[33m Criando a árvore de diretórios...\n\033[m'
+    	echo -e '\033[33m Criando a árvore dos diretórios...\n\033[m'
     	
 	mkdir -p /usr/riso
     	
 	mkdir -p /usr/riso/imagens
 
-    	echo -e '\033[33m Árvore de diretórios criada com sucesso.\n\033[m'
+    	echo -e '\033[33m A árvore dos diretórios foi criada com sucesso.\n\033[m'
 	
 	echo -e '\033[33m Instalando os scritps...\n\033[m'
     	
@@ -82,7 +86,7 @@ instalar() {
     	
 	cp $dirpath/grub.png /grub.png
 	
-	echo -e '\033[33m Scritps instalados com sucesso.\n\033[m'
+	echo -e '\033[33m OS scritps foram instalados com sucesso.\n\033[m'
 
     	echo -e '\033[33m Configurando o sistema de boot e atualizando...\n\033[m'
     	
@@ -108,9 +112,9 @@ instalar() {
     	
 	update-grub
 	
-	echo -e '\033[33m Sistema de boot configurando e atualizando com sucesso.\n\033[m'
+	echo -e '\033[33m O sistema de boot foi configurando e atualizando com sucesso.\n\033[m'
 
-    	echo -e '\033[33m Configurando os serviços do sistema...\n\033[m'
+    	echo -e '\033[33m Configurando os serviços do sistema RISO UEFI...\n\033[m'
     	
 	echo '#!/bin/bash' > /etc/init.d/RISOServiceRemoval
     	
@@ -124,7 +128,7 @@ instalar() {
     	
 	sed s/'use-ipv6=yes'/'use-ipv6=no'/g -i /etc/avahi/avahi-daemon.conf
 	
-	echo -e '\033[33m Os serviços do sistema foram configurados com sucesso.\n\033[m'
+	echo -e '\033[33m Os serviços do sistema RISO UEFI foram configurados com sucesso.\n\033[m'
 
     	echo -e '\033[33m O Sistema Recovery RISO UEFI - ${version} foi instalado com sucesso.\n\033[m'
 }
