@@ -32,7 +32,7 @@ carregar_variaveis() {
         	
 		--ok-label 'OK' \
         	
-		--msgbox 'Não existe um servidor RISOS ativo na rede\nVerifique a conexão e tente novamente.' \
+		--msgbox 'Não existe um servidor RISO UEFI ativo na rede\nVerifique a conexão e tente novamente.' \
         	
 		0 0
         	
@@ -134,7 +134,7 @@ instalar() {
         	
 		--ok-label 'OK' \
         	
-		--msgbox 'Não existem imagens dos sistemas operacionais.' \
+		--msgbox 'Não existem imagens dos sistemas operacionais,\n é preciso criar as imagens.' \
         	
 		0 0
         	
@@ -178,7 +178,7 @@ instalar_windows() {
         	
 		--ok-label 'OK' \
         	
-		--msgbox 'Não existe uma imagem do windows' \
+		--msgbox 'Não foi criada uma imagem do windows' \
         	
 		0 0
         	
@@ -232,7 +232,7 @@ instalar_linux() {
         	
 		--ok-label 'OK' \
         	
-		--msgbox 'Não existe uma imagem do linux' \
+		--msgbox 'Não foi criada uma imagem do linux' \
         	
 		0 0
         	
@@ -264,7 +264,7 @@ baixar_imagem_windows() {
         	
 		--ok-label 'OK' \
         	
-		--msgbox 'A imagem do windows no computador é a mais recente' \
+		--msgbox 'A imagem do windows criada é a mais recente.' \
         	
 		0 0
         	
@@ -282,7 +282,7 @@ baixar_imagem_windows() {
 
     	echo -e '\033[33m A imagem antiga do windows foi removida com sucesso.\033[m'
 	
-	echo -e '\033[33m Baixando as imagem "windows e EFI" do servidor RISO UEFI...\033[m'
+	echo -e '\033[33m Baixando as imagens novas do "windows e EFI" do servidor RISO UEFI...\033[m'
 	
 	#Baixa a imagem do servidor e a EFI
     	
@@ -302,7 +302,7 @@ baixar_imagem_windows() {
     	
 	trap "killall rtorrent; clear; exit" 2 15
 
-    	echo -e '\033[33m As imagens "windows e EFI foram baixadas com sucesso.\033[m'
+    	echo -e '\033[33m As imagens novas do "windows e EFI" foram baixadas com sucesso.\033[m'
 	    	
 	sleep 5
     	
@@ -334,7 +334,7 @@ baixar_imagem_linux() {
         	
 		--ok-label 'OK' \
         	
-		--msgbox 'A imagem do linux no computador é a mais recente' \
+		--msgbox 'A imagem do linux criada é a mais recente.' \
         	
 		0 0
         	
@@ -352,7 +352,7 @@ baixar_imagem_linux() {
 
     	echo -e '\033[33m A imagem antiga do linux foi removida com sucesso...\033[m'
 	
-	echo -e '\033[33m Baixando as imagem "linux e EFI" do servidor RISO UEFI...\033[m'
+	echo -e '\033[33m Baixando as imagens novas do "linux e EFI" do servidor RISO UEFI...\033[m'
 	
 	#Baixa a imagem do servidor e a EFI
     	
@@ -372,7 +372,7 @@ baixar_imagem_linux() {
     	
 	trap "killall rtorrent; clear; exit" 2 15
 
-    	echo -e '\033[33m As imagens "linux e EFI foram baixadas com sucesso.\033[m'
+    	echo -e '\033[33m As imagens novas do "linux e EFI" foram baixadas com sucesso.\033[m'
     	
 	sleep 5
     	
