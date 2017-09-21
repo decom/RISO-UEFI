@@ -741,7 +741,7 @@ if [ $USER == '0' ]; then
         
 else
     
-    echo -e '\033[33m Este script deve ser executado pelo usuário root,\nexecute o script novamente\n\033[m'
+    echo '\033[33m Este script deve ser executado pelo usuário root.\nExecute o script novamente.\n\033[m'
     
     exit 1
 
