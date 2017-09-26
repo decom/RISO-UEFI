@@ -1,0 +1,631 @@
+#!/bin/bash
+
+#Variáveis do script
+
+DIR_RISO=/usr/riso
+
+DIR_IMG=$DIR_RISO/imagens
+
+IMG_WIN=$DIR_IMG/windows.img.bz2
+
+IMG_LIN=$DIR_IMG/linux.tar.bz2
+
+IMG_EFI=$DIR_IMG/efi.tar.bz2
+
+TOR_WIM=$IMG_WIN.torrent
+
+TOR_LIN=$IMG_LIN.torrent
+
+DIR_WWW=/var/www/html
+
+RISO_CFG=$DIR_RISO/riso-EFI.cfg
+
+VERSION=`cat $DIR_RISO/riso.version`
+
+
+carregar_variaveis() {
+
+    source $RISO_CFG
+    
+    #Tamanho das imagens criadas no SERVIDOR.
+    
+    if [ -e ${IMG_WIN} ]; then
+        
+        TAMWINDOWS=`du ${IMG_WIN} | cut -f1`
+    
+    fi
+    
+    if [ -e ${IMG_LIN} ]; then
+        
+        TAMLINUX=`du ${IMG_LIN} | cut -f1`
+    
+    fi
+    
+    return 0
+
+}
+
+criar_efi() {
+    
+    carregar_variaveis;
+    
+    echo -e '\033[36m Removendo a imagem antiga EFI...\n\033[m'
+    
+    rm -f ${IMG_EFI}
+    
+    echo -e '\033[36m A imagem antiga EFI foi removida com sucesso.\n\033[m'
+    
+    #Cria o arquivo tar.bz2 EFI
+    
+    umount /mnt 2> /dev/null
+    
+    mount /dev/disk/by-uuid/${PARTEFI^^} /mnt
+    
+    cd /mnt
+    
+    tar -jcvf ${IMG_EFI} *
+    
+    cd ~
+    
+    umount /mnt 2> /dev/null
+    
+    return 0
+
+}
+
+criar_linux() {
+
+    carregar_variaveis;
+        
+    if [ -e "/dev/disk/by-uuid/${PARTLINUX,,}" ]; then
+            
+    echo -e '\033[36m Removendo a imagem antiga do linux...\n\033[m'
+            
+    rm -f ${IMG_LIN}
+            
+    rm -f ${TOR_LIN}
+        
+    echo -e '\033[36m A imagem antiga do linux foi removida com sucesso.\n\033[m'
+            
+    #Cria o arquivo tar.bz2 do linux
+            
+    umount /mnt 2> /dev/null
+            
+    mount /dev/disk/by-uuid/${PARTLINUX,,} /mnt
+            
+    cd /mnt
+            
+    tar -jcvf ${IMG_LIN} *
+            
+    umount /mnt 2> /dev/null
+            
+    criar_efi
+            
+    return 0
+        
+    else
+            
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não foi possível criar a imagem do linux, verifique os parâmetros do arquivo riso-EFI.cfg"\
+    0 0
+
+    return 1
+        
+    fi
+
+}
+
+criar_riso_service() {
+    
+    echo "Criando o arquivo de configuração do SERVIDOR RISOS UEFI..."
+    
+    echo '<?xml VERSION="1.0" standalone="no"?><!--*-nxml-*-->' > /etc/avahi/services/riso.service
+    
+    echo '<!DOCTYPE service-group SYSTEM "avahi-service.dtd">' >> /etc/avahi/services/riso.service
+    
+    echo '' >> /etc/avahi/services/riso.service
+    
+    echo '<!--riso.service -->' >> /etc/avahi/services/riso.service
+    
+    echo '' >> /etc/avahi/services/riso.service
+    
+    echo '<!--' >> /etc/avahi/services/riso.service
+    
+    echo '  Arquivo com as variáveis de configuração do riso.' >> /etc/avahi/services/riso.service
+    
+    echo '  Essas variáveis são usadas para efetuar a comunicação do SERVIDOR RISOS UEFI com os clientes(riso).' >> /etc/avahi/services/riso.service
+    
+    echo '  Para mais informações sobre o processo ver http://avahi.org' >> /etc/avahi/services/riso.service
+    
+    echo '-->' >> /etc/avahi/services/riso.service
+    
+    echo '' >> /etc/avahi/services/riso.service
+    
+    echo '<service-group>' >> /etc/avahi/services/riso.service
+    
+    echo '  <name>SERVIDOR RISOS UEFI DECOM</name>' >> /etc/avahi/services/riso.service
+    
+    echo '' >> /etc/avahi/services/riso.service
+    
+    echo '  <service>' >> /etc/avahi/services/riso.service
+    
+    echo '    <!--Nome do serviço-->' >> /etc/avahi/services/riso.service
+    
+    echo "    <type>_DECOM_RISO._tcp</type>" >> /etc/avahi/services/riso.service
+    
+    echo '' >> /etc/avahi/services/riso.service
+    
+    echo '    <!--Campo não é usado-->' >> /etc/avahi/services/riso.service
+    
+    echo '    <port>1234</port>' >> /etc/avahi/services/riso.service
+    
+    echo '' >> /etc/avahi/services/riso.service
+    
+    echo '    <!--Ip do SERVIDOR-->' >> /etc/avahi/services/riso.service # modifição para guardar o ip do SERVIDOR
+    
+    echo "    <txt-record>SERVIDOR=$SERVIDOR</txt-record>" >> /etc/avahi/services/riso.service
+    
+    echo '' >> /etc/avahi/services/riso.service
+    
+    echo '    <!--Variáveis com o tamanho das imagens geradas no SERVIDOR-->' >> /etc/avahi/services/riso.service
+    
+    echo "    <txt-record>TAMLINUX=${TAMLINUX}</txt-record>" >> /etc/avahi/services/riso.service
+    
+    echo "    <txt-record>TAMWINDOWS=${TAMWINDOWS}</txt-record>" >> /etc/avahi/services/riso.service
+    
+    echo '' >> /etc/avahi/services/riso.service
+    
+    echo '  </service>' >> /etc/avahi/services/riso.service
+    
+    echo '</service-group>' >> /etc/avahi/services/riso.service
+
+}
+
+criar_torrent_linux() {
+    
+    if [ -e $IMG_LIN ]; then
+            
+    btmakemetafile.bittorrent ${IMG_LIN} http://${SERVIDOR}:6969/announce 2> /dev/null
+            
+    #Guarda o IP de criação do Torrent
+            
+    echo $SERVIDOR > $DIR_IMG/linux.ip
+            
+    return 0
+        
+    else
+            
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não existe imagem do linux pronta"\
+    0 0
+
+    return 1
+        
+    fi
+
+}
+
+criar_torrent_windows() {
+    
+    if [ -e ${IMG_WIN} ]; then
+            
+    btmakemetafile.bittorrent ${IMG_WIN} http://${SERVIDOR}:6969/announce 2> /dev/null
+            
+    #Guarda o IP de criação do Torrent
+            
+    echo $SERVIDOR > $DIR_IMG/windows.ip
+            
+    return 0
+        
+    else
+            
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não existe uma imagem do windows pronta."\
+    0 0
+
+    return 1
+        
+    fi
+
+}
+
+criar_windows() {
+    
+    carregar_variaveis;
+        
+    if [ -e "/dev/disk/by-uuid/${PARTWINDOWS^^}" ]; then
+            
+    echo -e '\033[36m Removendo a imagem antiga do windows...\n\033[m'
+            
+    rm -f ${IMG_WIN}
+            
+    rm -f ${TOR_WIM}
+            
+    echo -e '\033[36m A imagem antiga do windows foi removida com sucesso.\n\033[m'
+            
+    #Cria arquivo img.bz2 do windows
+            
+    umount /dev/disk/by-uuid/${PARTWINDOWS^^} 2> /dev/null
+            
+    ntfsclone --save-image --output - /dev/disk/by-uuid/${PARTWINDOWS^^} | bzip2 -c > ${IMG_WIN}
+            
+    criar_efi
+            
+    return 0
+        
+    else
+            
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não foi possível criar a imagem do windows, verifique os parâmetros do arquivo riso-EFI.cfg"\
+    0 0
+
+    return 1
+
+    fi 
+
+}
+
+iniciar_servidor_linux() {
+    
+    carregar_variaveis;
+
+    if [ -e ${IMG_LIN} ]; then
+            
+    if [ -e "${TOR_LIN}" ]; then
+                
+    LINUX_IP=`grep "$SERVIDOR" ${DIR_IMG}/linux.ip | wc -l`
+                
+    if [ 1 -eq $LINUX_IP ]; then
+                    
+    criar_riso_service;
+                    
+    cp "${TOR_LIN}" "${DIR_WWW}"
+                    
+    cp "${IMG_EFI}" "${DIR_WWW}"
+                    
+    cp "${RISO_CFG}" "${DIR_WWW}"
+                    
+    bttrack --port 6969 --dfile dstate > /dev/null &
+                    
+    cd ${DIR_IMG}
+                    
+    rtorrent ${TOR_LIN}
+                    
+    rm -f /etc/avahi/services/*
+                    
+    return 0
+                
+    else
+                    
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "O torrrent do linux não possui o mesmo ip do SERVIDOR"\
+    0 0
+
+    return 1
+                
+    fi
+            
+    else
+                
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não existe um torrent do linux pronto"\
+    0 0
+
+    return 1
+            
+    fi
+        
+    else
+            
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não existe uma imagem do linux pronta"\
+    0 0
+
+    return 1
+        
+    fi
+
+}
+
+iniciar_servidor_linux_windows() {
+
+    carregar_variaveis;
+        
+    if [ -e ${IMG_WIN} -a -e ${IMG_LIN} ]; then
+            
+    if [ -e "${TOR_LIN}" -a -e "${TOR_WIM}" ]; then
+                
+    WINDOWS_IP=`grep "$SERVIDOR" ${DIR_IMG}/windows.ip | wc -l`
+                
+    LINUX_IP=`grep "$SERVIDOR" ${DIR_IMG}/linux.ip | wc -l`
+                
+    if [[ 1 -eq $WINDOWS_IP && 1 -eq $LINUX_IP ]]; then
+                    
+    criar_riso_service;
+                    
+    cp "${TOR_LIN}" "${TOR_WIM}" "${DIR_WWW}"
+                    
+    cp "${IMG_EFI}" "${DIR_WWW}"
+                
+    cp "${RISO_CFG}" "${DIR_WWW}"
+                    
+    bttrack --port 6969 --dfile dstate > /dev/null &
+                    
+    cd ${DIR_IMG}
+                    
+    rtorrent ${TOR_LIN} ${TOR_WIM}
+                    
+    rm -f /etc/avahi/services/*
+
+    else
+                    
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Os torrrents não possuem o mesmo ip do SERVIDOR"\
+    0 0
+
+    return 1
+                
+    fi
+            
+    else
+                
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não existem torrents prontos"\
+    0 0
+
+    return 1
+            
+    fi
+        
+    else
+            
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não existem imagens prontas"\
+    0 0
+
+    return 1
+        
+    fi
+
+}
+
+iniciar_servidor_windows() {
+
+    carregar_variaveis;
+
+    if [ -e ${IMG_WIN} ]; then
+
+    if [ -e "${TOR_WIM}" ]; then
+
+    WINDOWS_IP=`grep "$SERVIDOR" ${DIR_IMG}/windows.ip | wc -l`
+
+    if [ 1 -eq $WINDOWS_IP ]; then
+
+    criar_riso_service;
+
+    cp "${TOR_WIM}" "${DIR_WWW}"
+
+    cp "${IMG_EFI}" "${DIR_WWW}"
+
+    cp "${RISO_CFG}" "${DIR_WWW}"
+
+    bttrack --port 6969 --dfile dstate > /dev/null &
+
+    cd ${DIR_IMG}
+
+    rtorrent ${TOR_WIM}
+
+    rm -f /etc/avahi/services/*
+
+    else
+
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "O torrrent do windows não possui o mesmo ip do SERVIDOR"\
+    0 0
+
+    return 1
+
+    fi
+
+    else
+
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não existe um torrent do windows pronto"\
+    0 0
+
+    return 1
+
+    fi
+
+    else
+
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "Não existe uma imagem do windows pronta"\
+    0 0
+
+    return 1
+
+    fi
+
+}
+
+menu() {
+
+    while : ; do
+
+    OPCAO=$(dialog --stdout\
+    --ok-label 'Confirmar'\
+    --cancel-label 'Sair'\
+    --title "RISOS UEFI - ${VERSION}"\
+    --menu 'Selecione uma opção:'\
+    0 60 0\
+    1 'Criar as imagens dos sistemas operacionais'\
+    2 'Criar os torrents dos sistemas operacionais'\
+    3 'Iniciar o SERVIDOR RISOS UEFI')
+
+    [ $? -ne 0 ] && break
+
+    case $OPCAO in
+
+    1) menu_criar_imagens;;
+    2) verificar_conexao && menu_criar_torrents;;
+    3) verificar_conexao && menu_iniciar_servidor;;
+
+    esac
+
+    done
+
+}
+
+menu_criar_imagens() {
+
+    OPCAO=$(dialog --stdout\
+    --ok-label 'Confirmar'\
+    --checklist 'Selecione as imagens que serão criadas:'\
+    0 60 0\
+    Linux '' ON\
+    Windows '' ON)
+
+    case $OPCAO in
+
+    "Linux") criar_linux && \
+    dialog\
+    --ok-label 'OK'\
+    --title 'Sucesso'\
+    --msgbox "A imagem do linux foi criada com sucesso."\
+    0 0;;
+
+    "Windows") criar_windows && \
+    dialog\
+    --ok-label 'OK'\
+    --title 'Sucesso'\
+    --msgbox "A imagem do windows foi criada com sucesso."\
+    0 0;;
+
+    "Linux Windows") criar_linux && criar_windows && \
+    dialog\
+    --ok-label 'OK'\
+    --title 'Sucesso'\
+    --msgbox "As imagens do linux e do windows foram criadas com sucesso."\
+    0 0;;
+
+    esac
+
+}
+
+menu_criar_torrents() {
+
+    OPCAO=$(dialog --stdout\
+    --ok-label 'Confirmar'\
+    --checklist 'Selecione os torrents que serão criados:'\
+    0 60 0\
+    Linux '' ON\
+    Windows '' ON)
+
+    case $OPCAO in
+
+    "Linux") criar_torrent_linux && \
+    dialog\
+    --ok-label 'OK'\
+    --title 'Sucesso'\
+    --msgbox "O torrent do linux foi criado com sucesso."\
+    0 0;;
+
+    "Windows") criar_torrent_windows && \
+    dialog\
+    --ok-label 'OK'\
+    --title 'Sucesso'\
+    --msgbox "O torrent do windows foi criado com sucesso."\
+    0 0;;
+
+    "Linux Windows") criar_torrent_linux && criar_torrent_windows && \
+    dialog\
+    --ok-label 'OK'\
+    --title 'Sucesso'\
+    --msgbox "Os torrents do linux e do windows foram criados com sucesso."\
+    0 0;;
+
+    esac
+
+}
+
+menu_iniciar_servidor() {
+
+    OPCAO=$(dialog --stdout\
+    --ok-label 'Confirmar'\
+    --checklist 'Selecione as imagens que serão disponibilizadas para o download na rede:'\
+    0 60 0\
+    Linux '' ON\
+    Windows '' ON)
+
+    case $OPCAO in
+
+    "Linux") iniciar_servidor_linux;;
+
+    "Windows") iniciar_servidor_windows;;
+
+    "Linux Windows") iniciar_servidor_linux_windows;;
+
+    esac
+
+}
+
+verificar_conexao(){
+    
+    SERVIDOR=`ip route | grep src | cut -d ' ' -f9`
+        
+    if [ -z $SERVIDOR ]; then
+            
+    dialog\
+    --ok-label 'OK'\
+    --title 'Atenção'\
+    --msgbox "O SERVIDOR RISO UEFI não possui um ip atribuído."\
+    0 0
+
+    exit 1
+
+    fi
+
+}
+
+#Verifica se usuário é o root antes de iniciar e caso não seja o root termina a execução.
+
+    if [ $(id -u) -ne "0" ]; then
+
+    echo -e '\033[36;5m Este script deve ser executado pelo usuário root. Execute o script novamente.\n\033[m'
+
+    exit 1
+
+    else
+
+    rm -f /etc/avahi/services/*
+
+    carregar_variaveis && menu
+
+    fi
