@@ -154,7 +154,7 @@ baixar_imagem_windows() {
 
 carregar_variaveis() {
 
-    AVAHI_SAIDA=`avahi-browse -rtp _DECOM_RISO._tcp | grep '=' | head -n 1 | cut -d';' -f10`
+    AVAHI_SAIDA=`avahi-browse -rtp _UEFI_RISO._tcp | grep '=' | head -n 1 | cut -d';' -f10`
 
     SERVIDOR=`( tr ' ' '\n' | grep "^\"SERVIDOR=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $AVAHI_SAIDA`
         
